@@ -41,7 +41,7 @@ public class CreateStackMojo extends AbstractMojo {
 
     @Override
     public String toString() {
-        return "Configuration{" +
+        return "Configuration {" +
                 "stackName='" + stackName + '\'' +
                 ", templateUrl='" + templateUrl + '\'' +
                 ", tags=" + tags +
@@ -58,7 +58,8 @@ public class CreateStackMojo extends AbstractMojo {
         createStackRequest.setTags(this.createTags());
         createStackRequest.setTemplateURL(templateUrl);
 
-        AmazonCloudFormationClient amazonCloudFormationClient = new AmazonCloudFormationClient(new InstanceProfileCredentialsProvider());
+        AmazonCloudFormationClient amazonCloudFormationClient =
+                new AmazonCloudFormationClient(new InstanceProfileCredentialsProvider());
         amazonCloudFormationClient.createStack(createStackRequest);
     }
 
