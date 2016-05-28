@@ -55,6 +55,11 @@
             <artifactId>aws-java-sdk-cloudformation</artifactId>
             <version>${com.amazonaws.version}</version>
         </dependency>
+        <dependency>
+            <groupId>com.amazonaws</groupId>
+            <artifactId>aws-java-sdk-lambda</artifactId>
+            <version>${com.amazonaws.version}</version>
+        </dependency>
 
         <!-- Apache Log4J Logging Framework -->
         <dependency>

@@ -10,6 +10,8 @@ import com.amazonaws.auth.profile.ProfileCredentialsProvider;
 import com.amazonaws.services.cloudformation.AmazonCloudFormationClient;
 import com.amazonaws.services.cloudformation.model.CreateStackRequest;
 import com.amazonaws.services.cloudformation.model.Tag;
+import com.amazonaws.services.lambda.AWSLambdaClient;
+import com.amazonaws.services.lambda.model.UpdateFunctionCodeRequest;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.message.MessageFormatMessageFactory;
@@ -27,54 +29,48 @@ import java.util.Map;
 /**
  * @author Mels
  */
-@Mojo(name = "CreateStack", defaultPhase = LifecyclePhase.DEPLOY)
-public class CreateStackMojo extends AbstractMojo {
+@Mojo(name = "UpdateLambdaCode", defaultPhase = LifecyclePhase.DEPLOY)
+public class UpdateLambdaCodeMojo extends AbstractMojo {
 
-    private static final Logger LOGGER = LogManager.getLogger(CreateStackMojo.class, new MessageFormatMessageFactory());
-
-    @Parameter(required = true)
-    private String stackName;
+    private static final Logger LOGGER =
+            LogManager.getLogger(UpdateLambdaCodeMojo.class, new MessageFormatMessageFactory());
 
     @Parameter(required = true)
-    private String templateUrl;
+    private String functionName;
 
-    @Parameter
-    private Map<String, String> tags;
+    @Parameter(required = true)
+    private String s3Bucket;
+
+    @Parameter(required = true)
+    private String s3Key;
 
     @Override
     public String toString() {
         return "Configuration {" +
-                "stackName='" + stackName + '\'' +
-                ", templateUrl='" + templateUrl + '\'' +
-                ", tags=" + tags +
+                "functionName='" + functionName + '\'' +
+                ", s3Bucket='" + s3Bucket + '\'' +
+                ", s3Key='" + s3Key + '\'' +
                 '}';
     }
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
-        LOGGER.info("Executing Goal: CreateStack");
+        LOGGER.info("Executing Goal: UpdateLambdaCode");
         LOGGER.info(toString());
 
-        CreateStackRequest createStackRequest = new CreateStackRequest();
-        createStackRequest.setStackName(stackName);
-        createStackRequest.setTags(this.createTags());
-        createStackRequest.setTemplateURL(templateUrl);
-
-        AmazonCloudFormationClient amazonCloudFormationClient =
-                new AmazonCloudFormationClient(
+        AWSLambdaClient awsLambdaClient =
+                new AWSLambdaClient(
                         new AWSCredentialsProviderChain(
                                 new InstanceProfileCredentialsProvider(), new ProfileCredentialsProvider()));
-        amazonCloudFormationClient.createStack(createStackRequest);
-    }
 
-    private List<Tag> createTags() {
-        List<Tag> awsTags = new ArrayList<>();
+        UpdateFunctionCodeRequest updateFunctionCodeRequest = new UpdateFunctionCodeRequest();
+        updateFunctionCodeRequest.setFunctionName(functionName);
+        updateFunctionCodeRequest.setS3Bucket(s3Bucket);
+        updateFunctionCodeRequest.setS3Key(s3Key);
+        updateFunctionCodeRequest.setPublish(true);
 
-        tags.forEach((k, v) -> {
-            awsTags.add(new Tag().withKey(k).withValue(v));
-        });
+        awsLambdaClient.updateFunctionCode(updateFunctionCodeRequest);
 
-        return awsTags;
     }
 
 }
